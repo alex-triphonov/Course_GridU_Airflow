@@ -28,7 +28,7 @@ def print_start(msg):
 
 def check_table_exist(sql_to_get_schema, sql_to_check_table_exist, table_name):
     """callable to check if table exist """
-    hook = PostgresHook()
+    hook = PostgresHook(postgres_conn_id='postgres')
     query = hook.get_first(sql=sql_to_check_table_exist.format(table_name.lower()))
 
     if query:
@@ -39,7 +39,7 @@ def check_table_exist(sql_to_get_schema, sql_to_check_table_exist, table_name):
 
 def insert_row(sql_query, table_name, custom_id, dt_now, **kwargs):
     """ postgres hook to insert a new row: | id | user | timestamp | """
-    hook = PostgresHook()
+    hook = PostgresHook(postgres_conn_id='postgres')
     connection = hook.get_conn()
     cursor = connection.cursor()
     cursor.execute(
@@ -55,7 +55,7 @@ class PGCountRows(BaseOperator):
         super().__init__(**kwargs)
 
     def execute(self, context):
-        conn = PostgresHook().get_conn()
+        conn = PostgresHook(postgres_conn_id='postgres').get_conn()
         cursor = conn.cursor()
         cursor.execute(f"SELECT COUNT(*) FROM {database};")
         count_r = cursor.fetchall()

@@ -83,6 +83,26 @@ services:
       airflow_network:
         ipv4_address: 192.168.112.13
 
+  postgres_outer:
+    image: postgres:13
+    ports:
+      - "5433:5433"
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume-outer:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
+    restart: always
+    networks:
+      airflow_network:
+        ipv4_address: 192.168.112.23
+
+
   redis:
     image: redis:latest
     ports:
@@ -173,6 +193,7 @@ services:
 
 volumes:
   postgres-db-volume:
+  postgres-db-volume-outer:
 
 networks:
   airflow_network:

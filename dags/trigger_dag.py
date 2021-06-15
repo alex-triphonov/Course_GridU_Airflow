@@ -70,31 +70,3 @@ with DAG('trigger_sensor', start_date=datetime(2021, 6, 10), schedule_interval="
         task_id='process_results_subdag'
     )
     f_sens >> trigger >> call_sub
-
-with dag:
-    """ main DAG:
-    smart_sensor (looking for run file) ->
-    trigger_external_dag (dag_id_DB_1) -> 
-    SubDAG (external_sensor -> print_logs -> remove_file -> print_finish_log | example TaskGroup) -> 
-    send_message (into Slack chanell)
-    """
-    @task()
-    def slack_send_message():
-        client = WebClient(token=SLACK_TOKEN)
-        try:
-            response = client.chat_postMessage(channel="airflowtask33", text="Hello from your app! :tada:")
-        except SlackApiError as e:
-            assert e.response["error"]  # str like 'invalid_auth', 'channel_not_found'
-
-
-    sens = SmartFileSensor(task_id="checking_file", filepath=TRIGGER_DIR, fs_conn_id='fs_default')
-
-    task_trigger = TriggerDagRunOperator(
-        task_id="trigger_database_update", trigger_dag_id="dag_id_DB_1", wait_for_completion=True, poke_interval=15,
-    )
-
-    sub_dag = SubDagOperator(task_id='XCOM_sub_dag', subdag=get_subdag())
-
-    task_slack = slack_send_message()
-
-    sens >> task_trigger >> sub_dag >> task_slack
